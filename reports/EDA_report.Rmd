@@ -1,0 +1,259 @@
+---
+title: "EDA"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F, echo = F, message = F, fig.align = "center", fig.width = 7, fig.height = 4)
+
+library(tidyverse)
+library(formattable)
+```
+
+```{r}
+source("../models/functions_global.R", encoding = "utf-8")
+df.train <- load_train_data("../data/01.input/train.csv") %>% clean()
+avg_disease = mean(df.train$disease)
+```
+
+
+# 項目別
+
+## Age
+
+後でもうちょっとちゃんとする
+
+```{r}
+df.train %>%
+  ggplot(aes(Age)) +
+    geom_histogram(colour = "white", binwidth = 5)
+```
+
+## Gender
+
+```{r}
+df.train %>%
+  dplyr::count(Gender) %>%
+  dplyr::mutate(ratio = n / sum(n)) %>%
+  ggplot(aes(Gender, n)) +
+    geom_col() +
+    geom_text(aes(label = formattable::percent(ratio, digits = 0)), nudge_y = 15)
+```
+
+## T_Bil
+
+2 山あるね
+
+```{r}
+df.train %>%
+  ggplot(aes(T_Bil)) +
+    geom_histogram(colour = "white", binwidth = 0.25)
+```
+
+## D_Bil
+
+```{r}
+df.train %>%
+  ggplot(aes(D_Bil)) +
+    geom_histogram(colour = "white", binwidth = 0.25)
+```
+
+## ALP
+
+```{r}
+df.train %>%
+  ggplot(aes(ALP)) +
+    geom_histogram(colour = "white", binwidth = 10)
+```
+
+## ALT_GPT
+
+```{r}
+df.train %>%
+  ggplot(aes(ALT_GPT)) +
+    geom_histogram(colour = "white", binwidth = 10)
+```
+
+
+## AST_GOT
+
+```{r}
+df.train %>%
+  ggplot(aes(AST_GOT)) +
+    geom_histogram(colour = "white", binwidth = 5)
+```
+
+
+## TP
+
+```{r}
+df.train %>%
+  ggplot(aes(TP)) +
+    geom_histogram(colour = "white", binwidth = 0.05)
+```
+
+
+## Alb
+
+```{r}
+df.train %>%
+  ggplot(aes(Alb)) +
+    geom_histogram(colour = "white", binwidth = 0.05)
+```
+
+
+## AG_ratio
+
+```{r}
+df.train %>%
+  ggplot(aes(AG_ratio)) +
+    geom_histogram(colour = "white", binwidth = 0.01)
+```
+
+## disease
+
+```{r}
+df.train %>%
+  dplyr::count(disease) %>%
+  dplyr::mutate(ratio = n / sum(n)) %>%
+  ggplot(aes(disease, n)) +
+    geom_col(aes(fill = disease)) +
+    geom_text(aes(label = formattable::percent(ratio, digits = 0)), nudge_y = 15)
+```
+
+
+# disease との連関
+
+## Age
+
+```{r}
+df.train %>%
+  ggplot(aes(disease, Age)) +
+    geom_boxplot(aes(fill = disease))
+```
+
+```{r}
+df.train %>%
+  dplyr::mutate(
+    age_segment = dplyr::case_when(
+      dplyr::between(Age,  0, 20) ~ "age_00_20",
+      dplyr::between(Age, 21, 25) ~ "age_21_25",
+      dplyr::between(Age, 26, 30) ~ "age_26_30",
+      dplyr::between(Age, 31, 35) ~ "age_31_35",
+      dplyr::between(Age, 36, 40) ~ "age_36_40",
+      dplyr::between(Age, 41, 45) ~ "age_41_45",
+      dplyr::between(Age, 46, 50) ~ "age_46_50",
+      dplyr::between(Age, 51, 55) ~ "age_51_55",
+      dplyr::between(Age, 56, 60) ~ "age_56_60",
+      dplyr::between(Age, 61, 65) ~ "age_61_65",
+      dplyr::between(Age, 66, 70) ~ "age_66_70",
+      dplyr::between(Age, 71, 75) ~ "age_71_75",
+      dplyr::between(Age, 76, 80) ~ "age_76_80",
+      dplyr::between(Age, 81, 85) ~ "age_81_85",
+      dplyr::between(Age, 86, 90) ~ "age_86_90",
+      T ~ "Others"
+    )
+  ) %>%
+  dplyr::count(age_segment, disease) %>%
+  ggplot(aes(age_segment, n)) +
+    geom_col(aes(fill = disease), position = position_fill()) +
+    geom_hline(
+      yintercept = avg_disease,
+      linetype = 2,
+      alpha = 1/2
+    ) +
+    scale_y_continuous(labels = scales::percent) +
+    labs(
+      y = NULL
+    ) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Gender
+
+```{r}
+df.train %>%
+  dplyr::count(Gender, disease) %>%
+  ggplot(aes(Gender, n)) +
+    geom_col(aes(fill = disease), position = position_fill()) +
+    geom_hline(yintercept = avg_disease, linetype = 2, alpha = 1/2) +
+    scale_y_continuous(labels = scales::percent) +
+    labs(y = NULL)
+```
+
+
+## T_Bil
+
+```{r}
+df.train %>%
+  ggplot(aes(disease, T_Bil)) +
+    geom_boxplot(aes(fill = disease)) +
+    scale_y_log10()
+```
+
+
+## D_Bil
+
+```{r}
+df.train %>%
+  ggplot(aes(disease, D_Bil)) +
+    geom_boxplot(aes(fill = disease)) +
+    scale_y_log10()
+```
+
+
+# ALP
+```{r}
+df.train %>%
+  ggplot(aes(disease, ALP)) +
+    geom_boxplot(aes(fill = disease)) +
+    scale_y_log10()
+```
+
+
+# ALT_GPT
+
+```{r}
+df.train %>%
+  ggplot(aes(disease, ALT_GPT)) +
+    geom_boxplot(aes(fill = disease)) +
+    scale_y_log10()
+```
+
+
+# AST_GOT
+
+```{r}
+df.train %>%
+  ggplot(aes(disease, AST_GOT)) +
+    geom_boxplot(aes(fill = disease)) +
+    scale_y_log10()
+```
+
+
+## TP
+
+```{r}
+df.train %>%
+  ggplot(aes(disease, TP)) +
+    geom_boxplot(aes(fill = disease))
+```
+
+
+# Alb
+
+```{r}
+df.train %>%
+  ggplot(aes(disease, Alb)) +
+    geom_boxplot(aes(fill = disease))
+```
+
+
+## AG_ratio
+
+```{r}
+df.train %>%
+  ggplot(aes(disease, AG_ratio)) +
+    geom_boxplot(aes(fill = disease))
+```
+
