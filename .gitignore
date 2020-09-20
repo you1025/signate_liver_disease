@@ -5,3 +5,5 @@
 
 *.csv
 *.png
+reports/EDA_report_cache/*
+reports/EDA_report_files/*

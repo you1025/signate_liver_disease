@@ -8,6 +8,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = F, echo = F, message = F, fig.align
 
 library(tidyverse)
 library(formattable)
+library(GGally)
 ```
 
 ```{r}
@@ -255,5 +256,17 @@ df.train %>%
 df.train %>%
   ggplot(aes(disease, AG_ratio)) +
     geom_boxplot(aes(fill = disease))
+```
+
+
+# Pair Plot
+
+```{r, cache=T, fig.height=10, fig.width=10}
+df.train %>%
+  dplyr::mutate(dplyr::across(3:7, log)) %>%
+  .[,c(11, 3:10)] %>%
+  ggpairs(
+    aes(colour = disease, alpha = 1/3)
+  )
 ```
 
